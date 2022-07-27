@@ -1,5 +1,5 @@
 const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const STORAGE_API_HOST = isLocalhost ? `http://localhost:3000` : `https://keyval-store.herokuapp.com`;
+const STORAGE_API_HOST = false ? `http://localhost:3000` : `https://keyval-store.herokuapp.com`;
 const letterGrades = {
     4: 'A',
     3.5: 'B+',
@@ -33,6 +33,8 @@ function makeId(length) {
     }
     return result;
 }
+
+let updateResult;   
 
 window.addEventListener('DOMContentLoaded', function () {
     // Table
@@ -95,26 +97,14 @@ window.addEventListener('DOMContentLoaded', function () {
     function createModuleWithId(moduleName, credit, grade) {
         const id = makeId(10);
         modules[id] = { name: moduleName, credit, grade };
-        const newRow = createRow(moduleName, credit, grade, (newRow) => {
-            moduleTableBody.removeChild(newRow);
-            delete modules[id];
-            updateResult();
-        });
-        newRow.id = id;
-        return newRow;
+        addRow(moduleName, credit, grade);
     }
 
     /**
      * Create an array of module based on the table
      */
     function getModules() {
-        const rows = moduleTableBody.querySelectorAll('tr');
-        const result = [];
-        rows.forEach((row) => {
-            const id = row.id;
-            result.push(modules[id]);
-        });
-        return result;
+        return getRows();
     }
 
     /**
@@ -135,7 +125,7 @@ window.addEventListener('DOMContentLoaded', function () {
     /**
      * Computes GPA based on the modules in the table and update the result
      */
-    function updateResult() {
+    updateResult = function updateResult() {
         const modules = getModules();
         const gpa = computeGpa(modules);
         const canBuyChickenRice = gpa >= 3.5;
@@ -152,8 +142,7 @@ window.addEventListener('DOMContentLoaded', function () {
         const credit = +creditInput.value;
         const grade = +gradeInput.value;
 
-        const newRow = createModuleWithId(moduleName, credit, grade);
-        moduleTableBody.appendChild(newRow);
+        createModuleWithId(moduleName, credit, grade);
         updateResult();
         return false;
     };
@@ -191,8 +180,7 @@ window.addEventListener('DOMContentLoaded', function () {
             .then((json) => {
                 json.forEach((module) => {
                     const { name: moduleName, credit, grade } = module;
-                    const newRow = createModuleWithId(moduleName, credit, grade);
-                    moduleTableBody.appendChild(newRow);
+                    createModuleWithId(moduleName, credit, grade);
                 });
                 updateResult();
             })
